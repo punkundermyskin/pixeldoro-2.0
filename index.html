@@ -11,39 +11,33 @@
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
 
     <style>
-      /* OVERRIDES/ADDITIONS */
-
-      /* Make sure html/body fill the browser window */
+      /* Ensure the document fills the entire browser window */
       html, body {
         margin: 0;
         padding: 0;
         width: 100%;
         height: 100%;
-        background-color: #000; /* fallback color */
-        overflow: hidden;       /* no scrollbars */
+        background-color: #000;
+        overflow: hidden;
       }
-
-      /* This container normally is .unity-desktop or .unity-mobile from style.css,
-         but we ensure it can fill the entire window. */
+      /* Unity container styling */
       #unity-container {
         width: 100%;
         height: 100%;
         max-width: 100%;
         max-height: 100%;
         margin: 0 auto;
-        position: relative; /* so we can position the warning overlay absolutely inside */
+        position: relative;
       }
-
-      /* The canvas should fill the container. */
+      /* Canvas fills container */
       #unity-canvas {
         width: 100% !important;
         height: 100% !important;
-        background: #222; /* fallback color before the game is rendered */
+        background: #222;
       }
-
-      /* Orientation warning overlay */
-      #orientationWarning {
-        display: none; /* hidden by default; we'll show it via JS in portrait mode */
+      /* Mobile warning overlay */
+      #mobileWarning {
+        display: none; /* will be shown if mobile detected */
         position: absolute;
         top: 0;
         left: 0;
@@ -53,15 +47,13 @@
         color: #fff;
         text-align: center;
         font-size: 1.6em;
-        padding-top: 40vh; /* roughly centers text vertically */
+        padding-top: 40vh; /* vertically centers text */
         box-sizing: border-box;
-        z-index: 9999; /* above everything */
+        z-index: 9999;
       }
     </style>
-
   </head>
   <body>
-
     <!-- UNITY CONTAINER + LOADING UI -->
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
@@ -79,9 +71,9 @@
       </div>
     </div>
 
-    <!-- ORIENTATION WARNING OVERLAY -->
-    <div id="orientationWarning">
-      <p>Please rotate your device to landscape mode.</p>
+    <!-- MOBILE WARNING OVERLAY -->
+    <div id="mobileWarning">
+      <p>This beta currently available only on desktop</p>
     </div>
 
     <script>
@@ -92,7 +84,7 @@
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
       var warningBanner = document.querySelector("#unity-warning");
 
-      // Show temporary or permanent banners (Unity default logic)
+      // Unity default banner function (unchanged)
       function unityShowBanner(msg, type) {
         function updateBannerVisibility() {
           warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
@@ -100,11 +92,10 @@
         var div = document.createElement('div');
         div.innerHTML = msg;
         warningBanner.appendChild(div);
-        if (type == 'error') {
+        if (type === 'error') {
           div.style = 'background: red; padding: 10px;';
-        }
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+        } else {
+          if (type === 'warning') div.style = 'background: yellow; padding: 10px;';
           setTimeout(function() {
             warningBanner.removeChild(div);
             updateBannerVisibility();
@@ -113,7 +104,7 @@
         updateBannerVisibility();
       }
 
-      // Unity build config
+      // Unity build configuration
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/pixeldoro.loader.js";
       var config = {
@@ -127,26 +118,23 @@
         showBanner: unityShowBanner
       };
 
-      // If on mobile, certain style or resolution changes can be made
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Already set up the viewport above, so no need for a second meta tag
+      // Mobile detection using user agent
+      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        // Update container and canvas classes for mobile styling if needed
         container.className = "unity-mobile";
         canvas.className = "unity-mobile";
-
-        // Optionally lower resolution on mobile:
-        // config.devicePixelRatio = 1;
+        // Show the mobile-only beta warning overlay
+        document.getElementById("mobileWarning").style.display = "block";
       } else {
-        // For Desktop, we ignore the explicit 960x600 style
-        // because we want full window. Overridden in CSS above.
+        document.getElementById("mobileWarning").style.display = "none";
       }
 
-      // Use a custom background image for the canvas before the game loads
+      // Set a custom background image for the canvas before the game loads
       canvas.style.background = "url('" + buildUrl + "/pixeldoro.jpg') center / cover";
-
-      // Show the loading bar until Unity loads
       loadingBar.style.display = "block";
 
-      // Load the Unity loader script
+      // Load the Unity loader script dynamically
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
@@ -162,20 +150,6 @@
         });
       };
       document.body.appendChild(script);
-
-
-      /* ORIENTATION CHECK LOGIC */
-      function checkOrientation() {
-        var overlay = document.getElementById("orientationWarning");
-        // Show overlay if height > width (portrait)
-        if (window.innerHeight > window.innerWidth) {
-          overlay.style.display = "block";
-        } else {
-          overlay.style.display = "none";
-        }
-      }
-      window.addEventListener("load", checkOrientation);
-      window.addEventListener("resize", checkOrientation);
     </script>
   </body>
 </html>
