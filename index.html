@@ -73,7 +73,7 @@
 
     <!-- MOBILE WARNING OVERLAY -->
     <div id="mobileWarning">
-      <p>This beta currently available only on desktop</p>
+      <p>Please rotate your device :)</p>
     </div>
 
     <script>
@@ -120,12 +120,33 @@
 
       // Mobile detection using user agent
       var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      // Function to check if device is in portrait mode
+      function isPortrait() {
+        return window.innerHeight > window.innerWidth;
+      }
+      
+      // Function to update warning visibility based on device and orientation
+      function updateWarningVisibility() {
+        var mobileWarning = document.getElementById("mobileWarning");
+        if (isMobile && isPortrait()) {
+          // Show warning only on mobile devices in portrait orientation
+          mobileWarning.style.display = "block";
+        } else {
+          mobileWarning.style.display = "none";
+        }
+      }
+      
       if (isMobile) {
         // Update container and canvas classes for mobile styling if needed
         container.className = "unity-mobile";
         canvas.className = "unity-mobile";
-        // Show the mobile-only beta warning overlay
-        document.getElementById("mobileWarning").style.display = "block";
+        
+        // Initial check for orientation
+        updateWarningVisibility();
+        
+        // Add event listener for orientation changes
+        window.addEventListener('resize', updateWarningVisibility);
       } else {
         document.getElementById("mobileWarning").style.display = "none";
       }
