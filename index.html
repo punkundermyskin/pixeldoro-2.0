@@ -6,12 +6,9 @@
     <title>pixeldoro</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-
-    <!-- Ensure responsive scaling on mobile -->
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
 
     <style>
-      /* Ensure the document fills the entire browser window */
       html, body {
         margin: 0;
         padding: 0;
@@ -20,7 +17,6 @@
         background-color: #000;
         overflow: hidden;
       }
-      /* Unity container styling */
       #unity-container {
         width: 100%;
         height: 100%;
@@ -29,32 +25,25 @@
         margin: 0 auto;
         position: relative;
       }
-      /* Canvas fills container */
       #unity-canvas {
         width: 100% !important;
         height: 100% !important;
         background: #222;
       }
-      /* Mobile warning overlay */
-      #mobileWarning {
-        display: none; /* will be shown if mobile detected */
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.8);
-        color: #fff;
-        text-align: center;
-        font-size: 1.6em;
-        padding-top: 40vh; /* vertically centers text */
-        box-sizing: border-box;
-        z-index: 9999;
-      }
     </style>
   </head>
   <body>
-    <!-- UNITY CONTAINER + LOADING UI -->
+    <script>
+      // Mobile detection - do this IMMEDIATELY before loading anything
+      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Redirect to mobile-specific page
+        window.location.href = 'mobile.html';
+      }
+    </script>
+
+    <!-- UNITY CONTAINER (only loads if not mobile) -->
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
       <div id="unity-loading-bar">
@@ -71,106 +60,67 @@
       </div>
     </div>
 
-    <!-- MOBILE WARNING OVERLAY -->
-    <div id="mobileWarning">
-      <p>Please rotate your device :)</p>
-    </div>
-
     <script>
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var warningBanner = document.querySelector("#unity-warning");
+      // Only run Unity code if we're still here (not mobile)
+      if (!isMobile) {
+        var container = document.querySelector("#unity-container");
+        var canvas = document.querySelector("#unity-canvas");
+        var loadingBar = document.querySelector("#unity-loading-bar");
+        var progressBarFull = document.querySelector("#unity-progress-bar-full");
+        var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+        var warningBanner = document.querySelector("#unity-warning");
 
-      // Unity default banner function (unchanged)
-      function unityShowBanner(msg, type) {
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        function unityShowBanner(msg, type) {
+          function updateBannerVisibility() {
+            warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+          }
+          var div = document.createElement('div');
+          div.innerHTML = msg;
+          warningBanner.appendChild(div);
+          if (type === 'error') {
+            div.style = 'background: red; padding: 10px;';
+          } else {
+            if (type === 'warning') div.style = 'background: yellow; padding: 10px;';
+            setTimeout(function() {
+              warningBanner.removeChild(div);
+              updateBannerVisibility();
+            }, 5000);
+          }
+          updateBannerVisibility();
         }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type === 'error') {
-          div.style = 'background: red; padding: 10px;';
-        } else {
-          if (type === 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
-      }
 
-      // Unity build configuration
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/pixeldoro.loader.js";
-      var config = {
-        dataUrl: buildUrl + "/pixeldoro.data",
-        frameworkUrl: buildUrl + "/pixeldoro.framework.js",
-        codeUrl: buildUrl + "/pixeldoro.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "Pixeldoro Labs",
-        productName: "pixeldoro",
-        productVersion: "2.0.0",
-        showBanner: unityShowBanner
-      };
+        var buildUrl = "Build";
+        var loaderUrl = buildUrl + "/pixeldoro.loader.js";
+        var config = {
+          dataUrl: buildUrl + "/pixeldoro.data",
+          frameworkUrl: buildUrl + "/pixeldoro.framework.js",
+          codeUrl: buildUrl + "/pixeldoro.wasm",
+          streamingAssetsUrl: "StreamingAssets",
+          companyName: "Pixeldoro Labs",
+          productName: "pixeldoro",
+          productVersion: "2.0.0",
+          showBanner: unityShowBanner
+        };
 
-      // Mobile detection using user agent
-      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      
-      // Function to check if device is in portrait mode
-      function isPortrait() {
-        return window.innerHeight > window.innerWidth;
-      }
-      
-      // Function to update warning visibility based on device and orientation
-      function updateWarningVisibility() {
-        var mobileWarning = document.getElementById("mobileWarning");
-        if (isMobile && isPortrait()) {
-          // Show warning only on mobile devices in portrait orientation
-          mobileWarning.style.display = "block";
-        } else {
-          mobileWarning.style.display = "none";
-        }
-      }
-      
-      if (isMobile) {
-        // Update container and canvas classes for mobile styling if needed
-        container.className = "unity-mobile";
-        canvas.className = "unity-mobile";
-        
-        // Initial check for orientation
-        updateWarningVisibility();
-        
-        // Add event listener for orientation changes
-        window.addEventListener('resize', updateWarningVisibility);
-      } else {
-        document.getElementById("mobileWarning").style.display = "none";
-      }
+        canvas.style.background = "url('" + buildUrl + "/pixeldoro.jpg') center / cover";
+        loadingBar.style.display = "block";
 
-      // Set a custom background image for the canvas before the game loads
-      canvas.style.background = "url('" + buildUrl + "/pixeldoro.jpg') center / cover";
-      loadingBar.style.display = "block";
-
-      // Load the Unity loader script dynamically
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          progressBarFull.style.width = (100 * progress) + "%";
-        }).then((unityInstance) => {
-          loadingBar.style.display = "none";
-          fullscreenButton.onclick = () => {
-            unityInstance.SetFullscreen(1);
-          };
-        }).catch((message) => {
-          alert(message);
-        });
-      };
-      document.body.appendChild(script);
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+          createUnityInstance(canvas, config, (progress) => {
+            progressBarFull.style.width = (100 * progress) + "%";
+          }).then((unityInstance) => {
+            loadingBar.style.display = "none";
+            fullscreenButton.onclick = () => {
+              unityInstance.SetFullscreen(1);
+            };
+          }).catch((message) => {
+            alert(message);
+          });
+        };
+        document.body.appendChild(script);
+      }
     </script>
   </body>
 </html>
