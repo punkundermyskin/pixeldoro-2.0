@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="TemplateData/style.css">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
     <script src="pako.min.js"></script>
+    <script src="discord-sdk.js"></script>
 
     <style>
       html, body {
@@ -61,6 +62,50 @@
       </div>
     </div>
 
+    <!-- Discord Activity SDK (runs only inside Discord iframe) -->
+    <script>
+      var isDiscord = new URLSearchParams(window.location.search).has("frame_id")
+        || window.location.href.includes(".discordsays.com");
+
+      // Flag for Unity jslib to detect Discord Activity
+      window.IsDiscordActivity = function () { return isDiscord; };
+
+      if (isDiscord) {
+        var DISCORD_CLIENT_ID = "1499709203193790534";
+        var API_BASE_URL = "/.proxy/backend";
+        var DiscordSDK = DiscordSDKModule.DiscordSDK;
+
+        (async () => {
+          try {
+            var discordSdk = new DiscordSDK(DISCORD_CLIENT_ID);
+            await discordSdk.ready();
+            console.log("[Discord] SDK ready");
+
+            var { code } = await discordSdk.commands.authorize({
+              client_id: DISCORD_CLIENT_ID,
+              response_type: "code",
+              state: "",
+              prompt: "none",
+              scope: ["identify"],
+            });
+
+            var tokenResp = await fetch(API_BASE_URL + "/discord/token", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code }),
+            });
+            var { access_token } = await tokenResp.json();
+
+            var authResult = await discordSdk.commands.authenticate({ access_token });
+            console.log("[Discord] Authenticated, user:", authResult.user.id);
+            window.__discordUserId = authResult.user.id;
+          } catch (err) {
+            console.error("[Discord] SDK init failed:", err);
+          }
+        })();
+      }
+    </script>
+
     <script>
       // Only run Unity code if we're still here (not mobile)
       if (!isMobile) {
@@ -91,15 +136,15 @@
         }
 
         var buildUrl = "Build";
-        var loaderUrl = buildUrl + "/4f7ee8876caa2bd391cd843bcc11df0d.loader.js";
+        var loaderUrl = buildUrl + "/e3e12cfd36ba79a4fb440983193655eb.loader.js";
         var config = {
-          dataUrl: buildUrl + "/c29ba16f15ff074a4887e8dfdf20f33c.data.unityweb",
-          frameworkUrl: buildUrl + "/3ced9df0c65d000fd0e04e07caff2ae9.framework.js.unityweb",
-          codeUrl: buildUrl + "/f374e842e2aa4e12b0579fed723d0a49.wasm.unityweb",
+          dataUrl: buildUrl + "/cd501e4efc99c7d1594fada4c627fd00.data.unityweb",
+          frameworkUrl: buildUrl + "/394b03418ab9881c323de14e5968b96a.framework.js.unityweb",
+          codeUrl: buildUrl + "/4a8a9f83f6c71a6fc130a4688dc73015.wasm.unityweb",
           streamingAssetsUrl: "StreamingAssets",
           companyName: "Pixeldoro Labs",
           productName: "pixeldoro",
-          productVersion: "2.6.0",
+          productVersion: "2.6.1",
           showBanner: unityShowBanner,
         };
 
