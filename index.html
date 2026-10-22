@@ -3,7 +3,20 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>pixeldoro</title>
+    <title>Play Pixeldoro in your browser: cozy pomodoro study game</title>
+    <meta name="description" content="Play Pixeldoro free in your browser: a pomodoro timer in a cozy pixel art world where you study next to real people. No download, no account needed.">
+    <link rel="canonical" href="https://beta.pixeldoro.io/">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://beta.pixeldoro.io/">
+    <meta property="og:title" content="Play Pixeldoro in your browser: cozy pomodoro study game">
+    <meta property="og:description" content="Study next to real people in a cozy pixel world. Free pomodoro timer with lofi radio, right in your browser.">
+    <meta property="og:image" content="https://pixeldoro.io/images/social-preview.png">
+    <meta property="og:site_name" content="Pixeldoro">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Play Pixeldoro in your browser: cozy pomodoro study game">
+    <meta name="twitter:description" content="Study next to real people in a cozy pixel world. Free pomodoro timer with lofi radio, right in your browser.">
+    <meta name="twitter:image" content="https://pixeldoro.io/images/social-preview.png">
+    <meta name="twitter:site" content="@pixeldoro">
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
@@ -44,6 +57,10 @@
         window.location.href = 'mobile.html';
       }
     </script>
+
+    <noscript>
+      <p>Pixeldoro is a free pomodoro timer in a cozy pixel art world where you study next to real people. The browser version needs JavaScript. Get the apps and read more at <a href="https://pixeldoro.io/">pixeldoro.io</a>.</p>
+    </noscript>
 
     <!-- UNITY CONTAINER (only loads if not mobile) -->
     <div id="unity-container" class="unity-desktop">
@@ -100,6 +117,8 @@
             step = "ready";
             await reportIfSlow(discordSdk.ready(), step);
             console.log("[Discord] SDK ready");
+            // Unity opens the web checkout in the browser through it (LemonSqueezyBridge.jslib)
+            window.__discordSdk = discordSdk;
 
             step = "authorize";
             var { code } = await reportIfSlow(discordSdk.commands.authorize({
@@ -123,6 +142,8 @@
             var authResult = await discordSdk.commands.authenticate({ access_token });
             console.log("[Discord] Authenticated, user:", authResult.user.id);
             window.__discordUserId = authResult.user.id;
+            // Unity trades it with the backend for the player's cloud account (DiscordAccountLinker)
+            window.__discordAccessToken = access_token;
           } catch (err) {
             console.error("[Discord] SDK init failed at " + step + ":", err);
             reportDiscordError(step, err);

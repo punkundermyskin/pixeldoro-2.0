@@ -4,211 +4,231 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pixeldoro - yo mobile friend!</title>
+    <meta name="robots" content="noindex, follow">
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    
+    <link rel="preload" href="fonts/pixeldoro.woff2" as="font" type="font/woff2" crossorigin>
+    <script>
+        // Pick the store before first paint: ios / android / desktop.
+        // ?device=ios|android|desktop overrides it for previewing.
+        (function () {
+            var forced = new URLSearchParams(location.search).get('device');
+            var ua = navigator.userAgent;
+            var device = 'desktop';
+            if (/android/i.test(ua)) device = 'android';
+            else if (/iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) device = 'ios';
+            if (/^(ios|android|desktop)$/.test(forced)) device = forced;
+            document.documentElement.setAttribute('data-device', device);
+        })();
+    </script>
+
     <style>
+        @font-face {
+            font-family: 'Pixeldoro';
+            src: url('fonts/pixeldoro.woff2') format('woff2');
+            font-display: swap;
+        }
+
+        :root {
+            --orange: #edb83f;
+            --white: #ffffff;
+            --dark: #212b2c;
+            --on-bg: #ffffff;
+            --on-bg-muted: rgba(255, 255, 255, 0.82);
+            --pixel: 'Pixeldoro', 'Courier New', monospace;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #000;
-            color: #fff;
+            font-family: var(--pixel);
+            background-color: #060f1a;
+            color: var(--on-bg);
+            text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+            line-height: 1.5;
+            -webkit-font-smoothing: none;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 40px 16px;
             text-align: center;
-            line-height: 1.6;
         }
-        
-        .container {
-            max-width: 400px;
-            width: 100%;
+
+        a {
+            color: inherit;
         }
-        
-        .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 30px;
-            display: block;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
-        }
-        
-        h1 {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            line-height: 1.3;
-        }
-        
-        .main-text {
-            font-size: 18px;
-            margin-bottom: 30px;
-            opacity: 0.9;
-            line-height: 1.5;
-        }
-        
-        .sub-text {
-            font-size: 16px;
-            margin-bottom: 40px;
-            opacity: 0.7;
-        }
-        
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-            max-width: 280px;
-            margin: 0 auto 40px;
-        }
-        
-        .app-button {
-            display: block;
-            width: 100%;
-            transition: transform 0.2s ease, opacity 0.2s ease;
-        }
-        
-        .app-button img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-        
-        .app-button:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-        
-        .app-button:active {
-            transform: translateY(0);
-        }
-        
-        .divider {
-            font-size: 14px;
-            opacity: 0.5;
-            margin: 30px 0;
-            position: relative;
-        }
-        
-        .divider::before,
-        .divider::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 30%;
-            height: 1px;
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        .divider::before {
+
+        /* The game's Urban_Night1 scene behind the page, same as the home page */
+        .backdrop {
+            position: fixed;
+            z-index: -1;
+            top: 0;
             left: 0;
+            width: 100%;
+            height: 100vh;
+            height: 100lvh;
+            background: #060f1a url('images/bg-urban-night.webp') center / cover no-repeat;
+            image-rendering: pixelated;
         }
-        
-        .divider::after {
-            right: 0;
-        }
-        
-        .desktop-link {
-            color: #fff;
-            text-decoration: none;
-            font-size: 14px;
-            opacity: 0.6;
-            transition: opacity 0.2s ease;
-            display: inline-block;
-            padding: 10px 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-        }
-        
-        .desktop-link:hover {
-            opacity: 1;
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-        
-        .footer-text {
-            font-size: 12px;
-            opacity: 0.4;
+
+        .backdrop::after {
+            content: "";
             position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            inset: 0;
+            background: linear-gradient(rgba(33, 43, 44, 0.35), rgba(33, 43, 44, 0.6));
         }
-        
-        /* Fun animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
+
+        .headline {
+            max-width: 760px;
+            font-size: 35px;
+            font-weight: normal;
+            line-height: 1.2;
+            margin-bottom: 24px;
+        }
+
+        .headline-icon {
+            width: 40px;
+            height: 40px;
+            vertical-align: -6px;
+            margin-left: 10px;
+            image-rendering: pixelated;
+        }
+
+        .main-text {
+            max-width: 480px;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .sub-text {
+            max-width: 480px;
+            font-size: 15px;
+            color: var(--on-bg-muted);
+            margin-bottom: 28px;
+        }
+
+        .footer-text {
+            margin-top: 48px;
+            font-size: 15px;
+            color: var(--on-bg-muted);
+        }
+
+        /* Store badges: both on a computer, just the matching store on a phone */
+        .downloads {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .download-link img {
+            width: auto;
+            height: 59px;
+            display: block;
+            transition: transform 0.1s ease;
+        }
+
+        .download-link:hover img {
+            transform: translateY(-2px);
+        }
+
+        [data-device="ios"] .download-link.android,
+        [data-device="android"] .download-link.ios {
+            display: none;
+        }
+
+        [data-device="ios"] .download-link img,
+        [data-device="android"] .download-link img {
+            height: 65px;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                justify-content: flex-start;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+
+            .headline {
+                font-size: 30px;
+            }
+
+            .headline-icon {
+                width: 30px;
+                height: 30px;
+                vertical-align: -4px;
+            }
+
+            body {
+                justify-content: center;
+            }
+
+            .download-link img {
+                height: 47px;
             }
         }
-        
-        .container > * {
-            animation: fadeInUp 0.6s ease-out forwards;
-            opacity: 0;
-        }
-        
-        .logo { animation-delay: 0.1s; }
-        h1 { animation-delay: 0.2s; }
-        .main-text { animation-delay: 0.3s; }
-        .sub-text { animation-delay: 0.4s; }
-        .buttons { animation-delay: 0.5s; }
-        .divider { animation-delay: 0.6s; }
-        .desktop-link { animation-delay: 0.7s; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="images/logo.png" alt="pixeldoro logo" class="logo">
-        
-        <h1>web version isn’t built for mobile</h1>
-        
-        <p class="main-text">
-            trying to run it here might crash your phone (seriously).
-        </p>
-        
-        <p class="sub-text">
-            but hey — we made proper mobile apps that work way better 👇
-        </p>
-        
-        <div class="buttons">
-            <a href="https://play.pixeldoro.io/ios" class="app-button">
-                <img src="images/app_store_badge.png" alt="Download on the App Store">
-            </a>
-            <a href="https://play.pixeldoro.io/android" class="app-button">
-                <img src="images/google_play_badge.png" alt="Get it on Google Play">
-            </a>
-        </div>
-        
-        <!-- <div class="divider">or</div> -->
-        
-        <!-- <a href="?force-desktop=true" class="desktop-link" onclick="forceDesktop(event)">
-            lemme try anyway (might crash tho)
-        </a> -->
+    <div class="backdrop" aria-hidden="true"></div>
+
+    <h1 class="headline">web version isn’t built for mobile<img src="images/tomato-48.png" width="48" height="48" alt="" class="headline-icon"></h1>
+
+    <p class="main-text">trying to run it here might crash your phone (seriously).</p>
+
+    <p class="sub-text">but hey — we made proper mobile apps that work way better 👇</p>
+
+    <div class="downloads">
+        <a href="https://play.pixeldoro.io/ios" class="download-link ios">
+            <img src="images/app_store_badge.png" width="558" height="165" alt="Download on the App Store">
+        </a>
+        <a href="https://play.pixeldoro.io/android" class="download-link android">
+            <img src="images/google_play_badge.png" width="558" height="165" alt="Get it on Google Play">
+        </a>
     </div>
-    
+
     <p class="footer-text">made with 🍅 by pixeldoro labs</p>
-    
-    <!-- <script>
-        function forceDesktop(e) {
-            e.preventDefault();
-            // Set a flag to bypass mobile check
-            sessionStorage.setItem('forceDesktop', 'true');
-            // Go back to main page
-            window.location.href = 'index.html';
-        }
-    </script> -->
+
+    <script>
+        // Same languages as pixeldoro.io: the first browser language we have wins, English otherwise.
+        (function () {
+            var T = {
+                es: { lang: 'es-419', hl: 'es-419', title: 'pixeldoro - ¡hey, amigo del celular!', headline: 'la versión web no está hecha para celulares', main: 'intentar abrirla aquí podría trabar tu celular (en serio).', sub: 'pero tranqui — hicimos apps de verdad para celular que funcionan mucho mejor 👇', footer: 'hecho con 🍅 por pixeldoro labs', ios: 'Descárgalo en el App Store', android: 'Disponible en Google Play' },
+                'pt-br': { lang: 'pt-BR', hl: 'pt-BR', title: 'pixeldoro - e aí, amigo do celular!', headline: 'a versão web não foi feita pro celular', main: 'tentar rodar aqui pode travar seu celular (sério).', sub: 'mas relaxa — a gente fez apps de verdade pro celular que funcionam muito melhor 👇', footer: 'feito com 🍅 pela pixeldoro labs', ios: 'Baixar na App Store', android: 'Disponível no Google Play' },
+                de: { lang: 'de', hl: 'de', title: 'pixeldoro - yo, handy-freund!', headline: 'die web-version ist nicht fürs handy gemacht', main: 'wenn du sie hier startest, kann dein handy abstürzen (echt jetzt).', sub: 'aber hey — wir haben richtige apps fürs handy gebaut, die viel besser laufen 👇', footer: 'gemacht mit 🍅 von pixeldoro labs', ios: 'Laden im App Store', android: 'Jetzt bei Google Play' },
+                fr: { lang: 'fr', hl: 'fr', title: 'pixeldoro - yo l’ami mobile !', headline: 'la version web n’est pas faite pour le mobile', main: 'la lancer ici pourrait faire planter ton téléphone (sérieux).', sub: 'mais t’inquiète — on a fait de vraies applis mobiles qui marchent bien mieux 👇', footer: 'fait avec 🍅 par pixeldoro labs', ios: 'Télécharger dans l’App Store', android: 'Disponible sur Google Play' },
+                it: { lang: 'it', hl: 'it', title: 'pixeldoro - ehi, amico da smartphone!', headline: 'la versione web non è fatta per il telefono', main: 'provare ad aprirla qui potrebbe mandare in crash il tuo telefono (sul serio).', sub: 'ma tranquillo — abbiamo fatto delle vere app per telefono che funzionano molto meglio 👇', footer: 'fatto con 🍅 da pixeldoro labs', ios: 'Scarica su App Store', android: 'Disponibile su Google Play' },
+                id: { lang: 'id', hl: 'id', title: 'pixeldoro - halo, teman hp!', headline: 'versi web belum dibuat buat hp', main: 'kalau dijalankan di sini, hp kamu bisa crash (serius).', sub: 'tapi tenang — kami udah bikin aplikasi hp beneran yang jauh lebih lancar 👇', footer: 'dibuat dengan 🍅 oleh pixeldoro labs', ios: 'Download di App Store', android: 'Temukan di Google Play' },
+                tr: { lang: 'tr', hl: 'tr', title: 'pixeldoro - selam, telefondaki dostum!', headline: 'web sürümü telefon için yapılmadı', main: 'burada açmaya çalışırsan telefonun çökebilir (cidden).', sub: 'ama dert etme — çok daha iyi çalışan gerçek mobil uygulamalar yaptık 👇', footer: 'pixeldoro labs tarafından 🍅 ile yapıldı', ios: 'App Store\'dan İndirin', android: 'Google Play\'den Alın' },
+                ru: { lang: 'ru', hl: 'ru', title: 'pixeldoro - йоу, друг с телефона!', headline: 'веб-версия не рассчитана на телефон', main: 'если запустить её здесь, телефон может зависнуть (серьёзно).', sub: 'но не переживай — мы сделали нормальные мобильные приложения, они работают куда лучше 👇', footer: 'сделано с 🍅 в pixeldoro labs', ios: 'Загрузите в App Store', android: 'Доступно в Google Play' }
+            };
+            var wanted = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''];
+            var t = null;
+            for (var i = 0; i < wanted.length && !t; i++) {
+                var w = String(wanted[i]).toLowerCase();
+                var code = /^pt\b/.test(w) ? 'pt-br' : /^in\b/.test(w) ? 'id' : w.split('-')[0];
+                if (code === 'en') break;
+                t = T[code] || null;
+            }
+            if (!t) return;
+            var code = t.lang.toLowerCase().replace('es-419', 'es');
+            document.documentElement.lang = t.lang;
+            document.title = t.title;
+            document.querySelector('.headline').firstChild.nodeValue = t.headline;
+            document.querySelector('.main-text').textContent = t.main;
+            document.querySelector('.sub-text').textContent = t.sub;
+            document.querySelector('.footer-text').textContent = t.footer;
+            var ios = document.querySelector('.download-link.ios img');
+            ios.src = 'images/badges/app-store-' + code + '.svg';
+            ios.alt = t.ios;
+            var android = document.querySelector('.download-link.android');
+            android.href += '?hl=' + t.hl;
+            android.querySelector('img').src = 'images/badges/google-play-' + code + '.png';
+            android.querySelector('img').alt = t.android;
+        })();
+    </script>
 </body>
 </html>
