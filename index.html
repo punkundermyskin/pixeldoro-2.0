@@ -73,34 +73,59 @@
       if (isDiscord) {
         var DISCORD_CLIENT_ID = "1499790844100612178";
         var API_BASE_URL = "/.proxy/backend";
-        var DiscordSDK = DiscordSDKModule.DiscordSDK;
+
+        // A failed or stalled sign-in step goes to the backend logs, since without it the
+        // player just plays on without a Discord identity and nobody sees why
+        var reportDiscordError = function (step, err) {
+          var error = err && (err.message || JSON.stringify(err)) || String(err);
+          fetch(API_BASE_URL + "/discord/client-error", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ step: step, error: error, user_agent: navigator.userAgent }),
+          }).catch(function () {});
+        };
+        var reportIfSlow = function (promise, step) {
+          var settled = false;
+          promise.then(function () { settled = true; }, function () { settled = true; });
+          setTimeout(function () {
+            if (!settled) reportDiscordError(step + "_slow", "still waiting after 30s");
+          }, 30000);
+          return promise;
+        };
 
         (async () => {
+          var step = "sdk";
           try {
-            var discordSdk = new DiscordSDK(DISCORD_CLIENT_ID);
-            await discordSdk.ready();
+            var discordSdk = new DiscordSDKModule.DiscordSDK(DISCORD_CLIENT_ID);
+            step = "ready";
+            await reportIfSlow(discordSdk.ready(), step);
             console.log("[Discord] SDK ready");
 
-            var { code } = await discordSdk.commands.authorize({
+            step = "authorize";
+            var { code } = await reportIfSlow(discordSdk.commands.authorize({
               client_id: DISCORD_CLIENT_ID,
               response_type: "code",
               state: "",
               prompt: "none",
               scope: ["identify"],
-            });
+            }), step);
 
+            step = "token";
             var tokenResp = await fetch(API_BASE_URL + "/discord/token", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ code }),
             });
+            if (!tokenResp.ok) throw new Error("HTTP " + tokenResp.status + " " + (await tokenResp.text()));
             var { access_token } = await tokenResp.json();
 
+            step = "authenticate";
             var authResult = await discordSdk.commands.authenticate({ access_token });
             console.log("[Discord] Authenticated, user:", authResult.user.id);
             window.__discordUserId = authResult.user.id;
           } catch (err) {
-            console.error("[Discord] SDK init failed:", err);
+            console.error("[Discord] SDK init failed at " + step + ":", err);
+            reportDiscordError(step, err);
           }
         })();
       }
